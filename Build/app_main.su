@@ -1,0 +1,14 @@
+gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
+ios_base.h:129:3:constexpr std::_Ios_Openmode std::operator|(std::_Ios_Openmode, std::_Ios_Openmode)	16	static
+stf_dependancy.h:70:13:void throwException(std::__cxx11::string)	16	static
+stf_gpio.h:17:9:stf::GPIO::GPIO(GPIO_TypeDef*, uint16_t)	24	static
+stf_gpio.h:21:9:stf::GPIO::~GPIO()	16	static
+app_main.cpp:21:6:void setup()	4	static
+app_main.cpp:25:6:void loop0()	8	static
+app_main.cpp:46:6:void loop1()	32	static
+stf_usart.h:77:13:stf::USART& operator<<(stf::USART&, const T&) [with T = char [9]]	256	static
+stf_usart.h:77:13:stf::USART& operator<<(stf::USART&, const T&) [with T = char [7]]	256	static
+stf_usart.h:77:13:stf::USART& operator<<(stf::USART&, const T&) [with T = std::__cxx11::basic_string<char>]	256	static
+app_main.cpp:106:1:void __static_initialization_and_destruction_0(int, int)	16	static
+app_main.cpp:106:1:cpp)	8	static
+app_main.cpp:106:1:cpp)	8	static
