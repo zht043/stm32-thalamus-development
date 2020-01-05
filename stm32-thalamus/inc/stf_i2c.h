@@ -35,8 +35,8 @@ namespace stf {
         char *tx_buffer;
         char *rx_buffer;
 
-        void hal_transmit(char* str_ptr, i2c_mode imode, periph_mode mode);
-        void hal_receive(char* str_ptr, uint16_t num_bytes, i2c_mode imode, periph_mode mode);
+        void hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, periph_mode mode);
+        void hal_receive(char* str_ptr, uint16_t num_bytes, byte_t target_address, i2c_mode imode, periph_mode mode);
 
     public:
 

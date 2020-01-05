@@ -40,7 +40,9 @@ I2C::~I2C() {
 
 void I2C::hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, periph_mode mode) {
 	if(tx_status == NotReady) return;
+
     uint16_t tgt_add = (uint16_t)target_address << 1;
+   
     HAL_StatusTypeDef status;
     if(mode == Polling) {
         if(imode == Master) {
@@ -56,7 +58,7 @@ void I2C::hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, per
 
             //Unlock Usart
             __HAL_UNLOCK(hi2cx);
-            hi2cx->gState = HAL_I2C_STATE_READY;
+            hi2cx->State = HAL_I2C_STATE_READY;
             
             throwException("i2c_transmit Polling | TimeOut");
         }
@@ -167,21 +169,29 @@ __weak void i2c_transmit_completed_interrupt_task(I2C* instance) {
 }
 
 
-void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, i2c_mode imode, periph_mode pmode) {
+void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, byte_t target_address, i2c_mode imode, periph_mode mode) {
     if(rx_status == NotReady) return;
+
+    uint16_t tgt_add = (uint16_t)target_address << 1;
 
     HAL_StatusTypeDef status;
     if(mode == Polling) {
-        
 	    memset(str_ptr, 0, strlen(str_ptr));
-        status = HAL_I2C_Receive(hi2cx, (uint8_t*)(str_ptr), num_bytes, rx_timeout);
+
+        if(imode == Master) {
+            status = HAL_I2C_Master_Receive(hi2cx, tgt_add, (uint8_t*)(str_ptr), num_bytes, rx_timeout);
+        }
+        if(imode == Slave) {
+            status = HAL_I2C_Slave_Receive(hi2cx, (uint8_t*)(str_ptr), num_bytes, rx_timeout);
+        }
+
         if(status == HAL_BUSY) rx_status = InProgress;
         else if(status == HAL_TIMEOUT) {
             rx_status = TimeOut;
 
             //Unlock Usart
             __HAL_UNLOCK(hi2cx);
-            hi2cx->gState = HAL_I2C_STATE_READY;
+            hi2cx->State = HAL_I2C_STATE_READY;
             
             throwException("i2c_receive Polling | TimeOut");
         }
@@ -195,12 +205,18 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, i2c_mode imode, periph_
     }
 
     // Make sure interrupt is enabled within CubeMx software
-    // Not recommended, input data size has to be exact, or weird behavior might occur 
     if(mode == Interrupt) {
         //check if the previous receiption is completed
         if(rx_status == InProgress) return;
         memset(str_ptr, 0, strlen(str_ptr));
-        status = HAL_I2C_Receive_IT(hi2cx, (uint8_t*)str_ptr, num_bytes);
+
+        if(imode == Master) {
+            status = HAL_I2C_Master_Receive_IT(hi2cx, tgt_add, (uint8_t*)(str_ptr), num_bytes);
+        }
+        if(imode == Slave) {
+            status = HAL_I2C_Slave_Receive_IT(hi2cx, (uint8_t*)(str_ptr), num_bytes);
+        }
+
         if(status == HAL_ERROR) {
             rx_status = Error;
             throwException("i2c_receive interrupt | Error");
@@ -214,7 +230,14 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, i2c_mode imode, periph_
         //check if the previous reception is completed
         if(rx_status == InProgress) return;
         memset(str_ptr, 0, strlen(str_ptr));
-        status = HAL_I2C_Receive_DMA(hi2cx, (uint8_t*)str_ptr, num_bytes);
+
+        if(imode == Master) {
+            status = HAL_I2C_Master_Receive_DMA(hi2cx, tgt_add, (uint8_t*)(str_ptr), num_bytes);
+        }
+        if(imode == Slave) {
+            status = HAL_I2C_Slave_Receive_DMA(hi2cx, (uint8_t*)(str_ptr), num_bytes);
+        }
+
         if(status == HAL_ERROR) {
             rx_status = Error;
             throwException("i2c_receive DMA | Error");
@@ -233,14 +256,29 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, i2c_mode imode, periph_
  *  [I2C mode: slave mode]
  */
 std::string I2C::receive(uint16_t num_bytes) {
-    hal_receive(rx_buffer, num_bytes, Polling);
+    hal_receive(rx_buffer, num_bytes, 0, Slave, Polling);
     if(rx_status == Completed) 
         return std::string(rx_buffer);
     else return ""; // if error occurs
 }
 
+// [I2C mode: master mode]
+std::string I2C::receive(uint16_t num_bytes, byte_t target_address) {
+    hal_receive(rx_buffer, num_bytes, target_address, Master, Polling);
+    if(rx_status == Completed) 
+        return std::string(rx_buffer);
+    else return ""; // if error occurs
+}
+        
+
+// [I2C mode: slave mode]
 void I2C::receive(char* buffer_ptr, uint16_t num_bytes, periph_mode mode) {
-    hal_receive(buffer_ptr, num_bytes, mode);
+    hal_receive(buffer_ptr, num_bytes, 0, Slave, mode);
+}
+
+// [I2C mode: master mode]
+void I2C::receive(char* buffer_ptr, uint16_t num_bytes, byte_t target_address, periph_mode mode) {
+    hal_receive(buffer_ptr, num_bytes, target_address, Master, mode);
 }
 
 /*only support Polling mode due to the peripheral needs 
@@ -249,7 +287,14 @@ void I2C::receive(char* buffer_ptr, uint16_t num_bytes, periph_mode mode) {
  * [I2C mode: slave mode]                  
  */
 byte_t I2C::receive(void) {
-    hal_receive(rx_buffer, 1, Polling);
+    hal_receive(rx_buffer, 1, 0, Slave, Polling);
+    if(rx_status == Completed) return (byte_t)rx_buffer[0];
+    else return 0; // if error occurs
+}
+
+// [I2C mode: master mode]   
+byte_t I2C::receive(byte_t target_address) {
+    hal_receive(rx_buffer, 1, target_address, Master, Polling);
     if(rx_status == Completed) return (byte_t)rx_buffer[0];
     else return 0; // if error occurs
 }
