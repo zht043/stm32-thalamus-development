@@ -7,8 +7,8 @@
 
 #ifdef HAL_UART_MODULE_ENABLED
 
-#define USART_Default_TxTimeOut 60000 // 1 second 
-#define USART_Default_RxTimeOut 60000 // 1 second
+#define USART_Default_TxTimeOut 60000 // 1 min
+#define USART_Default_RxTimeOut 60000 // 1 min
 
 
 #define USART_Default_Tx_BufferSize 3

@@ -42,7 +42,7 @@ void I2C::hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, per
 	if(tx_status == NotReady) return;
 
     uint16_t tgt_add = (uint16_t)target_address << 1;
-   
+
     HAL_StatusTypeDef status;
     if(mode == Polling) {
         if(imode == Master) {
@@ -176,7 +176,7 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, byte_t target_address, 
 
     HAL_StatusTypeDef status;
     if(mode == Polling) {
-	    memset(str_ptr, 0, strlen(str_ptr));
+        memset(str_ptr, 0, strlen(str_ptr));
 
         if(imode == Master) {
             status = HAL_I2C_Master_Receive(hi2cx, tgt_add, (uint8_t*)(str_ptr), num_bytes, rx_timeout);
@@ -354,5 +354,182 @@ const std::string I2C::readLine(void) {
     const std::string rtn(str);
     return rtn;
 }
+
+
+
+void I2C::hal_write_reg(char* str_ptr, byte_t target_address, uint16_t target_register_address, periph_mode mode) {
+    if(tx_status == NotReady) return;
+
+    uint16_t tgt_add = (uint16_t)target_address << 1;
+
+    HAL_StatusTypeDef status;
+    if(mode == Polling) {
+        
+        status = HAL_I2C_Mem_Write(hi2cx, tgt_add, target_register_address,
+						(regsize == Reg8bit ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT) ,
+						(uint8_t*)(str_ptr), strlen(str_ptr) , tx_timeout);
+        if(status == HAL_BUSY) tx_status = InProgress;
+        else if(status == HAL_TIMEOUT) {
+            tx_status = TimeOut;
+
+            //Unlock Usart
+            __HAL_UNLOCK(hi2cx);
+            hi2cx->State = HAL_I2C_STATE_READY;
+            
+            throwException("i2c_write_reg Polling | TimeOut");
+        }
+        else if(status == HAL_ERROR) {
+            tx_status = Error;
+            throwException("i2c_write_reg Polling | Error");
+        }
+        else if(status == HAL_OK) {
+            tx_status = Completed;
+        }
+    }
+
+    // Make sure interrupt is enabled within CubeMx software
+    if(mode == Interrupt) {
+        //check if the previous transmission is completed
+        if(tx_status == InProgress) return;
+
+        status = HAL_I2C_Mem_Write_IT(hi2cx, tgt_add, target_register_address,
+						(regsize == Reg8bit ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT) ,
+						(uint8_t*)(str_ptr), strlen(str_ptr));
+
+        if(status == HAL_ERROR) {
+            tx_status = Error;
+            throwException("i2c_write_reg interrupt | Error");
+            return;
+        }
+        tx_status = InProgress;
+    }
+
+    // Make sure DMA and interrupt are both enabled within CubeMx software
+    if(mode == DMA) {
+        //check if the previous transmission is completed
+        if(tx_status == InProgress) return;
+
+        
+        status = HAL_I2C_Mem_Write_DMA(hi2cx, tgt_add, target_register_address,
+						(regsize == Reg8bit ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT) ,
+						(uint8_t*)(str_ptr), strlen(str_ptr));
+
+        if(status == HAL_ERROR) {
+            tx_status = Error;
+            throwException("i2c_write_reg DMA | Error");
+            return;
+        }
+        tx_status = InProgress;
+    }
+}
+void I2C::hal_read_reg(char* str_ptr, uint16_t num_bytes, byte_t target_address, 
+                       uint16_t target_register_address, periph_mode mode) {
+    if(rx_status == NotReady) return;
+
+    uint16_t tgt_add = (uint16_t)target_address << 1;
+
+    HAL_StatusTypeDef status;
+    if(mode == Polling) {
+	    memset(str_ptr, 0, strlen(str_ptr));
+
+        status = HAL_I2C_Mem_Read(hi2cx, tgt_add, target_register_address,
+			(regsize == Reg8bit ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT) ,
+			(uint8_t*)(str_ptr), num_bytes, rx_timeout);
+
+        if(status == HAL_BUSY) rx_status = InProgress;
+        else if(status == HAL_TIMEOUT) {
+            rx_status = TimeOut;
+
+            //Unlock Usart
+            __HAL_UNLOCK(hi2cx);
+            hi2cx->State = HAL_I2C_STATE_READY;
+            
+            throwException("i2c_read_reg Polling | TimeOut");
+        }
+        else if(status == HAL_ERROR) {
+            rx_status = Error;
+            throwException("i2c_read_reg Polling | Error");
+        }
+        else if(status == HAL_OK) {
+            rx_status = Completed;
+        }
+    }
+
+    // Make sure interrupt is enabled within CubeMx software
+    if(mode == Interrupt) {
+        //check if the previous receiption is completed
+        if(rx_status == InProgress) return;
+        memset(str_ptr, 0, strlen(str_ptr));
+
+        status = HAL_I2C_Mem_Read_IT(hi2cx, tgt_add, target_register_address,
+			(regsize == Reg8bit ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT) ,
+			(uint8_t*)(str_ptr), num_bytes);
+
+        if(status == HAL_ERROR) {
+            rx_status = Error;
+            throwException("i2c_receive interrupt | Error");
+            return;
+        }
+        rx_status = InProgress;
+    }
+
+    // Make sure DMA and interrupt are both enabled within CubeMx software
+    if(mode == DMA) {
+        //check if the previous reception is completed
+        if(rx_status == InProgress) return;
+        memset(str_ptr, 0, strlen(str_ptr));
+
+        status = HAL_I2C_Mem_Read_DMA(hi2cx, tgt_add, target_register_address,
+			(regsize == Reg8bit ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT) ,
+			(uint8_t*)(str_ptr), num_bytes);
+
+        if(status == HAL_ERROR) {
+            rx_status = Error;
+            throwException("i2c_receive DMA | Error");
+            return;
+        }
+        rx_status = InProgress;
+    }
+}
+
+
+
+void I2C::write_reg(byte_t target_address, uint16_t target_register_address,
+                        std::string& str, periph_mode mode) {
+    hal_write_reg((char*)str.c_str(), target_address, target_register_address, mode);                      
+}
+
+void I2C::write_reg(byte_t target_address, uint16_t target_register_address,
+                char* str_ptr, periph_mode mode) {
+    hal_write_reg(str_ptr, target_address, target_register_address, mode);
+}
+
+void I2C::write_reg(byte_t target_address, uint16_t target_register_address,
+                byte_t byte_to_write, periph_mode mode) {
+    tx_buffer[0] = (char)byte_to_write;
+    tx_buffer[1] = '\0';
+    hal_write_reg(tx_buffer, target_address, target_register_address, mode);
+}
+
+//polling mode only
+std::string I2C::read_reg(uint16_t num_bytes, byte_t target_address, uint16_t target_register_address) {
+    hal_read_reg(rx_buffer, num_bytes, target_address, target_register_address, Polling);
+    if(rx_status == Completed) 
+        return std::string(rx_buffer);
+    else return ""; // if error occurs
+}
+
+void I2C::read_reg(char* buffer_ptr, uint16_t num_bytes, byte_t target_address, 
+                uint16_t target_register_address, periph_mode mode) {
+    hal_read_reg(buffer_ptr, num_bytes, target_address, target_register_address, mode);
+}
+
+//polling mode only
+byte_t I2C::read_reg(byte_t target_address, uint16_t target_register_address) {
+    hal_read_reg(rx_buffer, 1, target_address, target_register_address, Polling);
+    if(rx_status == Completed) return (byte_t)rx_buffer[0];
+    else return 0; // if error occurs
+}
+
 
 #endif
