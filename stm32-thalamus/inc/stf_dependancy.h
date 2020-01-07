@@ -67,8 +67,8 @@ namespace stf {
 typedef uint8_t byte_t;
 
 
-__weak void throwException(std::string str) {
-    UNUSED(str);
-}
+
+__weak void exception(std::string str);
+
 
 #endif

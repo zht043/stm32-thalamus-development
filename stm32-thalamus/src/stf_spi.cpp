@@ -52,11 +52,11 @@ void SPI::hal_transmit(char* str_ptr, periph_mode mode) {
             __HAL_UNLOCK(hspix);
             hspix->State = HAL_SPI_STATE_READY;
             
-            throwException("spi_transmit Polling | TimeOut");
+            exception("spi_transmit Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("spi_transmit Polling | Error");
+            exception("spi_transmit Polling | Error");
         }
         else if(status == HAL_OK) {
             tx_status = Completed;
@@ -70,7 +70,7 @@ void SPI::hal_transmit(char* str_ptr, periph_mode mode) {
         status = HAL_SPI_Transmit_IT(hspix, (uint8_t*)str_ptr, strlen(str_ptr));
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("spi_transmit interrupt | Error");
+            exception("spi_transmit interrupt | Error");
             return;
         }
         tx_status = InProgress;
@@ -83,7 +83,7 @@ void SPI::hal_transmit(char* str_ptr, periph_mode mode) {
         status = HAL_SPI_Transmit_DMA(hspix, (uint8_t*)str_ptr, strlen(str_ptr));
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("spi_transmit DMA | Error");
+            exception("spi_transmit DMA | Error");
             return;
         }
         tx_status = InProgress;
@@ -137,11 +137,11 @@ void SPI::hal_receive(char* str_ptr, uint16_t num_bytes, periph_mode mode) {
             __HAL_UNLOCK(hspix);
             hspix->State = HAL_SPI_STATE_READY;
             
-            throwException("spi_receive Polling | TimeOut");
+            exception("spi_receive Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("spi_receive Polling | Error");
+            exception("spi_receive Polling | Error");
         }
         else if(status == HAL_OK) {
             rx_status = Completed;
@@ -157,7 +157,7 @@ void SPI::hal_receive(char* str_ptr, uint16_t num_bytes, periph_mode mode) {
         status = HAL_SPI_Receive_IT(hspix, (uint8_t*)str_ptr, num_bytes);
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("spi_receive interrupt | Error");
+            exception("spi_receive interrupt | Error");
             return;
         }
         rx_status = InProgress;
@@ -171,7 +171,7 @@ void SPI::hal_receive(char* str_ptr, uint16_t num_bytes, periph_mode mode) {
         status = HAL_SPI_Receive_DMA(hspix, (uint8_t*)str_ptr, num_bytes);
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("spi_receive DMA | Error");
+            exception("spi_receive DMA | Error");
             return;
         }
         rx_status = InProgress;
@@ -237,11 +237,11 @@ void SPI::hal_tranceive(char* tx_str_ptr, char* rx_str_ptr, periph_mode mode) {
             __HAL_UNLOCK(hspix);
             hspix->State = HAL_SPI_STATE_READY;
             
-            throwException("spi_tranceive Polling | TimeOut");
+            exception("spi_tranceive Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             txrx_status = Error;
-            throwException("spi_tranceive Polling | Error");
+            exception("spi_tranceive Polling | Error");
         }
         else if(status == HAL_OK) {
             txrx_status = Completed;
@@ -255,7 +255,7 @@ void SPI::hal_tranceive(char* tx_str_ptr, char* rx_str_ptr, periph_mode mode) {
         status = HAL_SPI_TransmitReceive_IT(hspix, (uint8_t*)tx_str_ptr, (uint8_t*)(rx_str_ptr), strlen(tx_str_ptr));
         if(status == HAL_ERROR) {
             txrx_status = Error;
-            throwException("spi_tranceive interrupt | Error");
+            exception("spi_tranceive interrupt | Error");
             return;
         }
         txrx_status = InProgress;
@@ -268,7 +268,7 @@ void SPI::hal_tranceive(char* tx_str_ptr, char* rx_str_ptr, periph_mode mode) {
         status = HAL_SPI_TransmitReceive_DMA(hspix, (uint8_t*)tx_str_ptr, (uint8_t*)(rx_str_ptr), strlen(tx_str_ptr));
         if(status == HAL_ERROR) {
             txrx_status = Error;
-            throwException("spi_tranceive DMA | Error");
+            exception("spi_tranceive DMA | Error");
             return;
         }
         txrx_status = InProgress;

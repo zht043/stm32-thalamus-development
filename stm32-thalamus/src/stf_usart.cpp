@@ -56,11 +56,11 @@ void USART::hal_transmit(char* str_ptr, periph_mode mode) {
             __HAL_UNLOCK(huartx);
             huartx->gState = HAL_UART_STATE_READY;
             
-            throwException("usart_transmit Polling | TimeOut");
+            exception("usart_transmit Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("usart_transmit Polling | Error");
+            exception("usart_transmit Polling | Error");
         }
         else if(status == HAL_OK) {
             tx_status = Completed;
@@ -74,7 +74,7 @@ void USART::hal_transmit(char* str_ptr, periph_mode mode) {
         status = HAL_UART_Transmit_IT(huartx, (uint8_t*)str_ptr, strlen(str_ptr));
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("usart_transmit interrupt | Error");
+            exception("usart_transmit interrupt | Error");
             return;
         }
         tx_status = InProgress;
@@ -87,7 +87,7 @@ void USART::hal_transmit(char* str_ptr, periph_mode mode) {
         status = HAL_UART_Transmit_DMA(huartx, (uint8_t*)str_ptr, strlen(str_ptr));
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("usart_transmit DMA | Error");
+            exception("usart_transmit DMA | Error");
             return;
         }
         tx_status = InProgress;
@@ -141,11 +141,11 @@ void USART::hal_receive(char* str_ptr, uint16_t num_bytes, periph_mode mode) {
             __HAL_UNLOCK(huartx);
             huartx->gState = HAL_UART_STATE_READY;
             
-            throwException("usart_receive Polling | TimeOut");
+            exception("usart_receive Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("usart_receive Polling | Error");
+            exception("usart_receive Polling | Error");
         }
         else if(status == HAL_OK) {
             rx_status = Completed;
@@ -161,7 +161,7 @@ void USART::hal_receive(char* str_ptr, uint16_t num_bytes, periph_mode mode) {
         status = HAL_UART_Receive_IT(huartx, (uint8_t*)str_ptr, num_bytes);
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("usart_receive interrupt | Error");
+            exception("usart_receive interrupt | Error");
             return;
         }
         rx_status = InProgress;
@@ -175,7 +175,7 @@ void USART::hal_receive(char* str_ptr, uint16_t num_bytes, periph_mode mode) {
         status = HAL_UART_Receive_DMA(huartx, (uint8_t*)str_ptr, num_bytes);
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("usart_receive DMA | Error");
+            exception("usart_receive DMA | Error");
             return;
         }
         rx_status = InProgress;

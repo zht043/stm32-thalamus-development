@@ -60,11 +60,11 @@ void I2C::hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, per
             __HAL_UNLOCK(hi2cx);
             hi2cx->State = HAL_I2C_STATE_READY;
             
-            throwException("i2c_transmit Polling | TimeOut");
+            exception("i2c_transmit Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("i2c_transmit Polling | Error");
+            exception("i2c_transmit Polling | Error");
         }
         else if(status == HAL_OK) {
             tx_status = Completed;
@@ -85,7 +85,7 @@ void I2C::hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, per
 
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("i2c_transmit interrupt | Error");
+            exception("i2c_transmit interrupt | Error");
             return;
         }
         tx_status = InProgress;
@@ -105,7 +105,7 @@ void I2C::hal_transmit(char* str_ptr, i2c_mode imode, byte_t target_address, per
 
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("i2c_transmit DMA | Error");
+            exception("i2c_transmit DMA | Error");
             return;
         }
         tx_status = InProgress;
@@ -193,11 +193,11 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, byte_t target_address, 
             __HAL_UNLOCK(hi2cx);
             hi2cx->State = HAL_I2C_STATE_READY;
             
-            throwException("i2c_receive Polling | TimeOut");
+            exception("i2c_receive Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("i2c_receive Polling | Error");
+            exception("i2c_receive Polling | Error");
         }
         else if(status == HAL_OK) {
             rx_status = Completed;
@@ -219,7 +219,7 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, byte_t target_address, 
 
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("i2c_receive interrupt | Error");
+            exception("i2c_receive interrupt | Error");
             return;
         }
         rx_status = InProgress;
@@ -240,7 +240,7 @@ void I2C::hal_receive(char* str_ptr, uint16_t num_bytes, byte_t target_address, 
 
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("i2c_receive DMA | Error");
+            exception("i2c_receive DMA | Error");
             return;
         }
         rx_status = InProgress;
@@ -376,11 +376,11 @@ void I2C::hal_write_reg(char* str_ptr, byte_t target_address, uint16_t target_re
             __HAL_UNLOCK(hi2cx);
             hi2cx->State = HAL_I2C_STATE_READY;
             
-            throwException("i2c_write_reg Polling | TimeOut");
+            exception("i2c_write_reg Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("i2c_write_reg Polling | Error");
+            exception("i2c_write_reg Polling | Error");
         }
         else if(status == HAL_OK) {
             tx_status = Completed;
@@ -398,7 +398,7 @@ void I2C::hal_write_reg(char* str_ptr, byte_t target_address, uint16_t target_re
 
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("i2c_write_reg interrupt | Error");
+            exception("i2c_write_reg interrupt | Error");
             return;
         }
         tx_status = InProgress;
@@ -416,7 +416,7 @@ void I2C::hal_write_reg(char* str_ptr, byte_t target_address, uint16_t target_re
 
         if(status == HAL_ERROR) {
             tx_status = Error;
-            throwException("i2c_write_reg DMA | Error");
+            exception("i2c_write_reg DMA | Error");
             return;
         }
         tx_status = InProgress;
@@ -444,11 +444,11 @@ void I2C::hal_read_reg(char* str_ptr, uint16_t num_bytes, byte_t target_address,
             __HAL_UNLOCK(hi2cx);
             hi2cx->State = HAL_I2C_STATE_READY;
             
-            throwException("i2c_read_reg Polling | TimeOut");
+            exception("i2c_read_reg Polling | TimeOut");
         }
         else if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("i2c_read_reg Polling | Error");
+            exception("i2c_read_reg Polling | Error");
         }
         else if(status == HAL_OK) {
             rx_status = Completed;
@@ -467,7 +467,7 @@ void I2C::hal_read_reg(char* str_ptr, uint16_t num_bytes, byte_t target_address,
 
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("i2c_receive interrupt | Error");
+            exception("i2c_receive interrupt | Error");
             return;
         }
         rx_status = InProgress;
@@ -485,7 +485,7 @@ void I2C::hal_read_reg(char* str_ptr, uint16_t num_bytes, byte_t target_address,
 
         if(status == HAL_ERROR) {
             rx_status = Error;
-            throwException("i2c_receive DMA | Error");
+            exception("i2c_receive DMA | Error");
             return;
         }
         rx_status = InProgress;
