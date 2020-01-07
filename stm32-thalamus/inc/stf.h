@@ -4,6 +4,9 @@
 #include "stf_gpio.h"
 #include "stf_systick.h"
 #include "stf_usart.h"
+#include "stf_i2c.h"
+#include "stf_spi.h"
+#include "stf_util.h"
 
 
 //====================================================================//

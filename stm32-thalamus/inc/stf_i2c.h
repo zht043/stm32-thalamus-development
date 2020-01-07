@@ -6,8 +6,8 @@
 
 #ifdef HAL_I2C_MODULE_ENABLED
 
-#define I2C_Default_TxTimeOut 60000 // 1 min 
-#define I2C_Default_RxTimeOut 60000 // 1 min
+#define I2C_Default_TxTimeOut 10000 // 10 seconds 
+#define I2C_Default_RxTimeOut 10000 // 10 seconds
 
 
 #define I2C_Default_Tx_BufferSize 3
