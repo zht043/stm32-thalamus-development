@@ -260,6 +260,8 @@ erase-all:
 	connect
 	list-serial
 	erase-all
+	print-handle-defs
+	print-IO-defs
 
 #Clean
 Clean:
@@ -315,6 +317,12 @@ print-sources:
 print-size: $(target).elf
 	@$(sz) $<
 
+
+print-handle-defs:
+	@sed -n '/HandleTypeDef/p' ./$(FDIR)/Core/Src/main.c  
+
+print-IO-defs:
+	@sed -n '/define/p' ./$(FDIR)/Core/Inc/main.h  
 
 #utility
 
