@@ -1,5 +1,6 @@
 #include "stf_timer.h"
 
+using namespace stf;
 
 /* Macro definition */
 #define Failed false
@@ -7,13 +8,13 @@
 
 
 /* Private function declaration*/
-static void timPWM_IN_IT_CallBack(stf::TIM *, HAL_TIM_ActiveChannel);
-static void timEnc_OverFlow_IT_CallBack(stf::TIM *);
+static void timPWM_IN_IT_CallBack(TIM *, HAL_TIM_ActiveChannel);
+static void timEnc_OverFlow_IT_CallBack(TIM *);
 
 
 /* Static member initialization */
-uint16_t stf::TIM::numActiveTIMs = 0;
-stf::TIM * stf::TIM::ActiveTIMs[] = {nullptr};
+uint16_t TIM::numActiveTIMs = 0;
+TIM * TIM::ActiveTIMs[] = {nullptr};
 
 
 /**
@@ -22,7 +23,7 @@ stf::TIM * stf::TIM::ActiveTIMs[] = {nullptr};
  *  @param  APBx_DivFactor 
  *  @param  xBitTIM 
  */
-stf::TIM::TIM(TIM_HandleTypeDef * htim, uint32_t APBx_DivFactor, TIM_Resolution xBitTIM) : 
+TIM::TIM(TIM_HandleTypeDef * htim, uint32_t APBx_DivFactor, TIM_Resolution xBitTIM) : 
     htim(htim), APBx_Div_Factor(APBx_DivFactor), xBitTIM(xBitTIM), isEncMode(false) {
     for(int i = 0; i < numActiveTIMs; i++) {
 		if(ActiveTIMs[i]->htim == htim) {
@@ -37,7 +38,7 @@ stf::TIM::TIM(TIM_HandleTypeDef * htim, uint32_t APBx_DivFactor, TIM_Resolution 
 /**
  * @brief default destructor
  */ 
-stf::TIM::~TIM() = default;
+TIM::~TIM() = default;
 
 
 /*=======================Universal Function================================*/
@@ -51,7 +52,7 @@ stf::TIM::~TIM() = default;
  * @brief get Auto Reload Register value
  * @return current Auto Reload Register value
  */
-uint32_t stf::TIM::getARR() {
+uint32_t TIM::getARR() {
     this->ARR = __HAL_TIM_GET_AUTORELOAD(this->htim);
 	return this->ARR;
 }
@@ -62,7 +63,7 @@ uint32_t stf::TIM::getARR() {
  * @param channel
  * @return current Capture/Compare
  */
-uint32_t stf::TIM::getCCR(uint32_t channel) {
+uint32_t TIM::getCCR(uint32_t channel) {
     this->CCR = __HAL_TIM_GET_COMPARE(this->htim, channel);
 	return this->CCR;
 }
@@ -72,7 +73,7 @@ uint32_t stf::TIM::getCCR(uint32_t channel) {
  * @brief get counter
  * @return current counter
  */
-uint32_t stf::TIM::getCNT() {
+uint32_t TIM::getCNT() {
     this->CNT = __HAL_TIM_GET_COUNTER(this->htim);
 	return this->CNT;
 }
@@ -82,7 +83,7 @@ uint32_t stf::TIM::getCNT() {
  * @brief get pre-scaler
  * @return current pre-scaler
  */
-uint32_t stf::TIM::getPrescaler() {
+uint32_t TIM::getPrescaler() {
     return this->TimerPrescaler;
 }
 
@@ -91,7 +92,7 @@ uint32_t stf::TIM::getPrescaler() {
  * @brief set Auto Reload Register value
  * @param ARR_val new Auto Reload Register value
  */
-void stf::TIM::setARR(uint32_t ARR_val) {
+void TIM::setARR(uint32_t ARR_val) {
     if(this->xBitTIM == TIM_16bit) {
 		if(ARR_val > 0xFFFF) {
 			exception("stf_timer.cpp: setARR() | AutoReload must < 0xFFFF for a 16 bit timer");
@@ -113,7 +114,7 @@ void stf::TIM::setARR(uint32_t ARR_val) {
  * @param channel
  * @param CCR_val new Capture/Compare value
  */
-void stf::TIM::setCCR(uint32_t channel, uint32_t CCR_val) {
+void TIM::setCCR(uint32_t channel, uint32_t CCR_val) {
     this->CCR = CCR_val;
 	__HAL_TIM_SET_COMPARE(this->htim, channel, CCR_val);
 }
@@ -123,7 +124,7 @@ void stf::TIM::setCCR(uint32_t channel, uint32_t CCR_val) {
  * @brief set counter
  * @param CNT_val new counter value
  */
-void stf::TIM::setCNT(uint32_t CNT_val) {
+void TIM::setCNT(uint32_t CNT_val) {
     this->CNT = CNT_val;
 	__HAL_TIM_SET_COUNTER(this->htim, CNT_val);
 }
@@ -133,7 +134,7 @@ void stf::TIM::setCNT(uint32_t CNT_val) {
  * @brief set pre-scalar
  * @param prescaler_val new pre-scalar value
  */
-void stf::TIM::setPrescaler(uint32_t prescaler_val) {
+void TIM::setPrescaler(uint32_t prescaler_val) {
     this->TimerPrescaler = prescaler_val;
 	__HAL_TIM_SET_PRESCALER(this->htim, this->TimerPrescaler);
 }
@@ -144,7 +145,7 @@ void stf::TIM::setPrescaler(uint32_t prescaler_val) {
  * @param channel
  * @return Index associate with channel
  */
-uint8_t stf::TIM::tim_channel_index(uint32_t channel) {
+uint8_t TIM::tim_channel_index(uint32_t channel) {
 	switch(channel) {
 		case TIM_CH1:
 			return 1;
@@ -176,7 +177,7 @@ uint8_t stf::TIM::tim_channel_index(uint32_t channel) {
  * & timer frequency must be greater than a certain
  * threshold such that make prescaler value less than 2^16 (refer to source code)
  */
-bool stf::TIM::initBasicCounting(uint32_t AutoReload_count, uint32_t timer_frequency) {
+bool TIM::initBasicCounting(uint32_t AutoReload_count, uint32_t timer_frequency) {
     this->setARR(AutoReload_count);
     return this->setFrequency(timer_frequency);
 }
@@ -187,7 +188,7 @@ bool stf::TIM::initBasicCounting(uint32_t AutoReload_count, uint32_t timer_frequ
  * @param timer_frequency
  * @return TODO
  */
-bool stf::TIM::setFrequency(uint32_t timer_frequency) {
+bool TIM::setFrequency(uint32_t timer_frequency) {
 	uint32_t TimerMaxFrequency = HAL_RCC_GetHCLKFreq() / this->APBx_Div_Factor;
 
 	if(timer_frequency > TimerMaxFrequency) {
@@ -206,7 +207,7 @@ bool stf::TIM::setFrequency(uint32_t timer_frequency) {
 /**
  * @brief TODO
  */
-void stf::TIM::countBegin() {
+void TIM::countBegin() {
 	HAL_TIM_Base_Start(this->htim);
 }
 
@@ -214,7 +215,7 @@ void stf::TIM::countBegin() {
 /**
  * @brief TODO
  */
-void stf::TIM::countEnd() {
+void TIM::countEnd() {
 	HAL_TIM_Base_Stop(this->htim);
 }
 
@@ -222,7 +223,7 @@ void stf::TIM::countEnd() {
 /**
  * @brief TODO
  */
-void stf::TIM::countBeginIT() {
+void TIM::countBeginIT() {
 	HAL_TIM_Base_Start_IT(this->htim);
 }
 
@@ -230,7 +231,7 @@ void stf::TIM::countBeginIT() {
 /** 
  * @brief TODO
  */
-void stf::TIM::countEndIT() {
+void TIM::countEndIT() {
 	HAL_TIM_Base_Stop_IT(this->htim);
 }
 
@@ -240,7 +241,7 @@ void stf::TIM::countEndIT() {
  * @return current counter
  * This method is equivalent to getCNT
  */
-uint32_t stf::TIM::getCount() {
+uint32_t TIM::getCount() {
 	return this->getCNT();
 }
 
@@ -249,7 +250,7 @@ uint32_t stf::TIM::getCount() {
  * @brief TODO
  * @param instance
  */
-__weak void timPE_IT_CallBack(stf::TIM * instance) {
+__weak void timPE_IT_CallBack(TIM * instance) {
 	UNUSED(instance);
 }
 
@@ -258,7 +259,7 @@ __weak void timPE_IT_CallBack(stf::TIM * instance) {
  * @brief TODO
  * @param instance
  */
-__weak void timSysT_IT_CallBack(stf::TIM * instance) {
+__weak void timSysT_IT_CallBack(TIM * instance) {
 	UNUSED(instance);
 }
 
@@ -312,7 +313,7 @@ __weak void timSysT_IT_CallBack(stf::TIM * instance) {
  * 						rising edge of a typical pwm pulse
  * @return TODO
  */
-bool stf::TIM::initPwmOut(uint32_t max_count, uint32_t pwm_frequency) {
+bool TIM::initPwmOut(uint32_t max_count, uint32_t pwm_frequency) {
 	return this->setPwmFrequency(max_count, pwm_frequency);
 }
 
@@ -325,7 +326,7 @@ bool stf::TIM::initPwmOut(uint32_t max_count, uint32_t pwm_frequency) {
  * 						rising edge of a typical pwm pulse
  * @return TODO
  */
-bool stf::TIM::setPwmFrequency(uint32_t max_count, uint32_t pwm_frequency) {
+bool TIM::setPwmFrequency(uint32_t max_count, uint32_t pwm_frequency) {
 	double TimerMaxFrequency = HAL_RCC_GetHCLKFreq() / this->APBx_Div_Factor;
 	double TimerFrequency = max_count * pwm_frequency;
 
@@ -347,7 +348,7 @@ bool stf::TIM::setPwmFrequency(uint32_t max_count, uint32_t pwm_frequency) {
  * @brief TODO
  * @param channel TIM Channels to be enabled
  */
-void stf::TIM::pwmGenBegin(uint32_t channel) {
+void TIM::pwmGenBegin(uint32_t channel) {
 	HAL_TIM_PWM_Start(this->htim, channel);
 	this->setPwmDutyCycle(channel, 0);
 }
@@ -357,7 +358,7 @@ void stf::TIM::pwmGenBegin(uint32_t channel) {
  * @brief TODO
  * @param channel TIM Channels ro be disabled
  */
-void stf::TIM::pwmGenEnd(uint32_t channel) {
+void TIM::pwmGenEnd(uint32_t channel) {
 	HAL_TIM_PWM_Stop(this->htim, channel);
 }
 
@@ -367,7 +368,7 @@ void stf::TIM::pwmGenEnd(uint32_t channel) {
  * @param channel
  * @param dutyCycleCnt
  */
-void stf::TIM::setPwmDutyCycle(uint32_t channel, uint32_t dutyCycleCnt) {
+void TIM::setPwmDutyCycle(uint32_t channel, uint32_t dutyCycleCnt) {
 	this->setCCR(channel, dutyCycleCnt);
 }
 
@@ -377,7 +378,7 @@ void stf::TIM::setPwmDutyCycle(uint32_t channel, uint32_t dutyCycleCnt) {
  * @param channel
  * @param dutyCyclePercent
  */
-void stf::TIM::pwmWrite(uint32_t channel, double dutyCyclePercent) {
+void TIM::pwmWrite(uint32_t channel, double dutyCyclePercent) {
 	if(dutyCyclePercent > 100.00f) {
 		dutyCyclePercent = 100.00f;
 	}
@@ -405,7 +406,7 @@ void stf::TIM::pwmWrite(uint32_t channel, double dutyCyclePercent) {
  * @return TODO
  * Note: Capture interrupt MUST be enabled, use CubeMx to enable it
  */
-bool stf::TIM::initPwmIn(stf::TIM::TIM_IC * IC_fields, uint32_t max_count, uint32_t pwm_frequency) {
+bool TIM::initPwmIn(TIM::TIM_IC * IC_fields, uint32_t max_count, uint32_t pwm_frequency) {
 	uint32_t timer_frequency = max_count * pwm_frequency;
 	uint32_t TimerMaxFrequency = HAL_RCC_GetHCLKFreq() / this->APBx_Div_Factor;
 	if(timer_frequency > TimerMaxFrequency) {
@@ -432,7 +433,7 @@ bool stf::TIM::initPwmIn(stf::TIM::TIM_IC * IC_fields, uint32_t max_count, uint3
  * @param channel
  * @param pulse_polarity
  */
-void stf::TIM::pwmIcBegin(uint32_t channel, PulseLevel pulse_polarity) {
+void TIM::pwmIcBegin(uint32_t channel, PulseLevel pulse_polarity) {
 	if(pulse_polarity == TIM_PulseOnHigh) {
 		this->setICPolarity(channel, TIM_IC_RisingEdge);
 	}
@@ -449,7 +450,7 @@ void stf::TIM::pwmIcBegin(uint32_t channel, PulseLevel pulse_polarity) {
  * @brief TODO
  * @param channel
  */
-void stf::TIM::pwmIcEnd(uint32_t channel) {
+void TIM::pwmIcEnd(uint32_t channel) {
 	this->icEndIT(channel);
 }
 
@@ -459,7 +460,7 @@ void stf::TIM::pwmIcEnd(uint32_t channel) {
  * @param channel
  * @return TODO
  */
-int32_t stf::TIM::getPulseWidth(uint32_t channel) {
+int32_t TIM::getPulseWidth(uint32_t channel) {
 	return this->IC_fields->PulseWidth[tim_channel_index(channel)];
 }
 
@@ -469,7 +470,7 @@ int32_t stf::TIM::getPulseWidth(uint32_t channel) {
  * @param channel
  * @return TODO
  */
-double stf::TIM::pwmRead(uint32_t channel) {
+double TIM::pwmRead(uint32_t channel) {
 	return ((double)this->getPulseWidth(channel) / (double)this->IC_fields->pwm_input_max_count) * 100.00f;
 }
 
@@ -479,7 +480,7 @@ double stf::TIM::pwmRead(uint32_t channel) {
  * @param instance
  * @param active_channel
  */
-void timPWM_IN_IT_CallBack(stf::TIM * instance, HAL_TIM_ActiveChannel active_channel) {
+void timPWM_IN_IT_CallBack(TIM * instance, HAL_TIM_ActiveChannel active_channel) {
 	uint32_t channel;
 	if(instance->IC_fields->isUsedForPwmInput) {
 		switch(active_channel) {
@@ -504,19 +505,19 @@ void timPWM_IN_IT_CallBack(stf::TIM * instance, HAL_TIM_ActiveChannel active_cha
 		}
 
 		if(instance->IC_fields->pulse_polarity == TIM_PulseOnHigh) {
-			if(instance->IC_fields->ICpolarity[stf::TIM::tim_channel_index(channel)] == TIM_IC_RisingEdge) {
-				instance->IC_fields->IC_FirstEdge[stf::TIM::tim_channel_index(channel)] = 
+			if(instance->IC_fields->ICpolarity[TIM::tim_channel_index(channel)] == TIM_IC_RisingEdge) {
+				instance->IC_fields->IC_FirstEdge[TIM::tim_channel_index(channel)] = 
 					instance->getCapVal(channel);
 
 				instance->setICPolarity(channel, TIM_IC_FallingEdge);
 			}
-			else if(instance->IC_fields->ICpolarity[stf::TIM::tim_channel_index(channel)] == TIM_IC_FallingEdge) {
-				instance->IC_fields->PulseWidth[stf::TIM::tim_channel_index(channel)] = 
+			else if(instance->IC_fields->ICpolarity[TIM::tim_channel_index(channel)] == TIM_IC_FallingEdge) {
+				instance->IC_fields->PulseWidth[TIM::tim_channel_index(channel)] = 
 					instance->getCapVal(channel) - 
-					instance->IC_fields->IC_FirstEdge[stf::TIM::tim_channel_index(channel)];
+					instance->IC_fields->IC_FirstEdge[TIM::tim_channel_index(channel)];
 
-				if(instance->IC_fields->PulseWidth[stf::TIM::tim_channel_index(channel)] < 0) {
-					instance->IC_fields->PulseWidth[stf::TIM::tim_channel_index(channel)] += instance->getARR() + 1;
+				if(instance->IC_fields->PulseWidth[TIM::tim_channel_index(channel)] < 0) {
+					instance->IC_fields->PulseWidth[TIM::tim_channel_index(channel)] += instance->getARR() + 1;
 													
 				}
 
@@ -524,18 +525,18 @@ void timPWM_IN_IT_CallBack(stf::TIM * instance, HAL_TIM_ActiveChannel active_cha
 			}
 		}
 		else {
-			if(instance->IC_fields->ICpolarity[stf::TIM::tim_channel_index(channel)] == TIM_IC_FallingEdge) {
-				instance->IC_fields->IC_FirstEdge[stf::TIM::tim_channel_index(channel)] = 
+			if(instance->IC_fields->ICpolarity[TIM::tim_channel_index(channel)] == TIM_IC_FallingEdge) {
+				instance->IC_fields->IC_FirstEdge[TIM::tim_channel_index(channel)] = 
 					instance->getCapVal(channel);
 
 				instance->setICPolarity(channel, TIM_IC_RisingEdge);
 			}
-			else if(instance->IC_fields->ICpolarity[stf::TIM::tim_channel_index(channel)] == TIM_IC_RisingEdge) {
-				instance->IC_fields->PulseWidth[stf::TIM::tim_channel_index(channel)] = 
+			else if(instance->IC_fields->ICpolarity[TIM::tim_channel_index(channel)] == TIM_IC_RisingEdge) {
+				instance->IC_fields->PulseWidth[TIM::tim_channel_index(channel)] = 
 					instance->getCapVal(channel) - 
-					instance->IC_fields->IC_FirstEdge[stf::TIM::tim_channel_index(channel)];
-				if(instance->IC_fields->PulseWidth[stf::TIM::tim_channel_index(channel)] < 0) {
-					instance->IC_fields->PulseWidth[stf::TIM::tim_channel_index(channel)] += instance->getARR() + 1;
+					instance->IC_fields->IC_FirstEdge[TIM::tim_channel_index(channel)];
+				if(instance->IC_fields->PulseWidth[TIM::tim_channel_index(channel)] < 0) {
+					instance->IC_fields->PulseWidth[TIM::tim_channel_index(channel)] += instance->getARR() + 1;
 													
 				}
 
@@ -552,7 +553,7 @@ void timPWM_IN_IT_CallBack(stf::TIM * instance, HAL_TIM_ActiveChannel active_cha
  * @param timer_frequency
  * @return TODO
  */
-uint32_t stf::TIM::initIC(stf::TIM::TIM_IC * IC_fields, uint32_t timer_frequency) {
+uint32_t TIM::initIC(TIM::TIM_IC * IC_fields, uint32_t timer_frequency) {
 	if(this->xBitTIM == TIM_32bit) {
 		this->setARR(0xFFFFFFFF);
 	}
@@ -572,7 +573,7 @@ uint32_t stf::TIM::initIC(stf::TIM::TIM_IC * IC_fields, uint32_t timer_frequency
  * @param channel
  * @param icPolarity
  */
-void stf::TIM::setICPolarity(uint32_t channel, uint32_t icPolarity) {
+void TIM::setICPolarity(uint32_t channel, uint32_t icPolarity) {
 	this->IC_fields->ICpolarity[tim_channel_index(channel)] = icPolarity;
 	__HAL_TIM_SET_CAPTUREPOLARITY(this->htim, channel, icPolarity);
 }
@@ -582,7 +583,7 @@ void stf::TIM::setICPolarity(uint32_t channel, uint32_t icPolarity) {
  * @brief TODO
  * @param channel
  */
-void stf::TIM::icBeginIT(uint32_t channel) {
+void TIM::icBeginIT(uint32_t channel) {
 	HAL_TIM_IC_Start_IT(this->htim, channel);
 }
 
@@ -591,7 +592,7 @@ void stf::TIM::icBeginIT(uint32_t channel) {
  * @brief TODO
  * @param channel
  */
-void stf::TIM::icEndIT(uint32_t channel) {
+void TIM::icEndIT(uint32_t channel) {
 	HAL_TIM_IC_Stop_IT(this->htim, channel);
 }
 
@@ -601,7 +602,7 @@ void stf::TIM::icEndIT(uint32_t channel) {
  * @param channel
  * @return TODO
  */
-uint32_t stf::TIM::getCapVal(uint32_t channel) {
+uint32_t TIM::getCapVal(uint32_t channel) {
 	return HAL_TIM_ReadCapturedValue(this->htim, channel);
 }
 
@@ -611,12 +612,12 @@ uint32_t stf::TIM::getCapVal(uint32_t channel) {
  * @param htim
  */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef * htim) {
-	for(int i = 0; i < stf::TIM::numActiveTIMs; i++) {
-		if(stf::TIM::ActiveTIMs[i]->htim == htim) {
+	for(int i = 0; i < TIM::numActiveTIMs; i++) {
+		if(TIM::ActiveTIMs[i]->htim == htim) {
 			HAL_TIM_ActiveChannel active_channel = htim->Channel;
-			timPWM_IN_IT_CallBack(stf::TIM::ActiveTIMs[i], active_channel);
-			timEnc_OverFlow_IT_CallBack(stf::TIM::ActiveTIMs[i]);
-			timIC_IT_CallBack(stf::TIM::ActiveTIMs[i], active_channel);
+			timPWM_IN_IT_CallBack(TIM::ActiveTIMs[i], active_channel);
+			timEnc_OverFlow_IT_CallBack(TIM::ActiveTIMs[i]);
+			timIC_IT_CallBack(TIM::ActiveTIMs[i], active_channel);
 		}
 	}
 }
@@ -627,7 +628,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef * htim) {
  * @param instance
  * @param active_channel
  */
-__weak void timIC_IT_CallBack(stf::TIM * instance, HAL_TIM_ActiveChannel active_channel) {
+__weak void timIC_IT_CallBack(TIM * instance, HAL_TIM_ActiveChannel active_channel) {
 	UNUSED(instance);
 	UNUSED(active_channel);
 }
@@ -640,7 +641,7 @@ __weak void timIC_IT_CallBack(stf::TIM * instance, HAL_TIM_ActiveChannel active_
 /**
  * @brief TODO
  */
-void stf::TIM::initEnc() {
+void TIM::initEnc() {
 	if(this->xBitTIM == TIM_16bit) {
 		this->setARR(0xFFFF);
 	}
@@ -656,7 +657,7 @@ void stf::TIM::initEnc() {
 /**
  * @brief TODO
  */
-void stf::TIM::encBegin() {
+void TIM::encBegin() {
 	HAL_TIM_Encoder_Start(this->htim, TIM_CHANNEL_ALL);
 	this->resetEnc();
 }
@@ -665,7 +666,7 @@ void stf::TIM::encBegin() {
 /**
  * @brief TODO
  */
-void stf::TIM::encBegin_IT() {
+void TIM::encBegin_IT() {
 	HAL_TIM_Encoder_Start_IT(this->htim, TIM_CHANNEL_ALL);
 	this->resetEnc();
 }
@@ -674,7 +675,7 @@ void stf::TIM::encBegin_IT() {
 /**
  * @brief TODO
  */
-void stf::TIM::encEnd() {
+void TIM::encEnd() {
 	HAL_TIM_Encoder_Stop(this->htim, TIM_CHANNEL_ALL);
 }
 
@@ -682,7 +683,7 @@ void stf::TIM::encEnd() {
 /**
  * @brief TODO
  */
-void stf::TIM::encEnd_IT() {
+void TIM::encEnd_IT() {
 	HAL_TIM_Encoder_Stop_IT(this->htim, TIM_CHANNEL_ALL);
 }
 
@@ -690,7 +691,7 @@ void stf::TIM::encEnd_IT() {
 /**
  * @brief TODO
  */
-void stf::TIM::resetEnc() {
+void TIM::resetEnc() {
 	this->setCNT(0);
 	this->ENC_CNT = 0;
 	this->ENC_OverFlow = 0;
@@ -701,7 +702,7 @@ void stf::TIM::resetEnc() {
  * @brief TODO
  * @return TODO
  */
-int32_t stf::TIM::getEncCNT() {
+int32_t TIM::getEncCNT() {
 	if(this->xBitTIM == TIM_16bit) {
 		this->ENC_CNT = (int16_t)__HAL_TIM_GET_COUNTER(this->htim) + this->ENC_OverFlow;
 	}
@@ -716,7 +717,7 @@ int32_t stf::TIM::getEncCNT() {
  * @brief TODO
  * @return TODO
  */
-int32_t stf::TIM::getOverFlowPart_32bit() {
+int32_t TIM::getOverFlowPart_32bit() {
 	return this->ENC_OverFlow;
 }
 
@@ -725,7 +726,7 @@ int32_t stf::TIM::getOverFlowPart_32bit() {
  * @brief TODO
  * @param instance
  */
-void timEnc_OverFlow_IT_CallBack(stf::TIM * instance) {
+void timEnc_OverFlow_IT_CallBack(TIM * instance) {
 	if(instance->isEncMode == true) {
 		if(instance->xBitTIM == TIM_32bit) {
 
