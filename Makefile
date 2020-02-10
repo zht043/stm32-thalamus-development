@@ -68,7 +68,7 @@
 ### its own Makefile (Make sure to set up CubeMX to Makefile mode)
 ### which is include bellow (see line: include $(FDIR)/Makefile)
 ### Set FDIR (Firmware Directory) to be the path to <cube_prj_dir> 
-FDIR = cube-core
+FDIR = RM-core
 #########=========================================================================#########
 
 
@@ -88,7 +88,7 @@ DEFAULT_DEFINES = $(C_DEFS)
 
 #########================= Frequently Modified Variables (FMV)====================#########
 ### Target name
-target = thalamus
+target = RM
 
 ### Name the build directory BUILD as "<Name>" for storing all intermediate object files for faster rebuilding
 BUILD = Build
@@ -227,6 +227,9 @@ interface_config = freq=4000
 connect: 
 	$(cubeprog) -c port=$(interface) $(interface_config)
 
+reset:
+	$(cubeprog) -c port=$(interface) $(interface_config) -rst
+
 #Flash Device (download .elf file from PC/Mac to the correct Flash memory region of the stm32 device)
 #(look up "cross-compilation" online if uncertain about this step)
 flash: default $(target).elf
@@ -262,6 +265,7 @@ erase-all:
 	erase-all
 	print-handle-defs
 	print-IO-defs
+	magic
 
 #Clean
 Clean:
@@ -324,6 +328,9 @@ print-handle-defs:
 print-IO-defs:
 	@sed -n '/define/p' ./$(FDIR)/Core/Inc/main.h  
 
+magic:
+	@make print-handle-defs
+	@make print-IO-defs
 #utility
 
 #call graph generator using cflow, c only, c++ not supported

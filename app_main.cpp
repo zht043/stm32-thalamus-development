@@ -16,10 +16,11 @@ GPIO red_led(LD3_GPIO_Port, LD3_Pin);
 extern UART_HandleTypeDef huart3;
 USART serial(&huart3);
 
-
+extern UART_HandleTypeDef huart2;
+USART raspi_serial(&huart2);
 
 void setup(void) {
-
+    serial << "Fuck World!" << stf::endl;
 }
 
 void loop0(void) {
@@ -56,11 +57,14 @@ void loop1(void) {
 	while(serial.get_rx_status() != Completed);
     serial << str << stf::endl;
 */
+/*
     serial << "Enter >>";
     string line = serial.readLine();
     serial << "Echo: " << line << stf::endl;
+*/
 
-
+    string line = raspi_serial.readLine();
+    serial << line << stf::endl;
 
 /*
 	vector<int> vec;
